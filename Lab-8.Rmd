@@ -64,7 +64,92 @@ ggplot(data = homes_sub, aes(x = SqFt, y = Price))+
   geom_smooth(method = lm)
 ```
 
+## Model the relationship with home price as the DV
+
+```{r}
+homes_lm1 <- lm(Price ~ City + Bedrooms + Bathrooms + SqFt + PricePerSqFt + Status, data = homes_sub)
+
+# make a subset that only contains the quantitative variables
+homes_quant <- homes_sub %>% 
+  select(Price:PricePerSqFt) # omitting city becuase cant check correlation between categorical variables
+
+homes_cor <- cor(homes_quant)
+
+corrplot(homes_cor)
+
+homes_cor
+
+homes_lm1
+
+# how would I explore the diagnostic plots
+
+plot(homes_lm1)
+```
+
+- if everthing else is held constant, on average, I would expect a house in Atascadero to cost $9068.20 less than a house in Arroyo Grande
+
+Try another model where we simplify this a bit:
+
+- City 
+- SqFt
+- Status
+
+```{r}
+homes_lm2 <- lm(Price ~ City + SqFt + Status, data = homes_sub)
+
+# or just call this in the console if you wanna take a look
+homes_lm2
+
+plot(homes_lm2)
+
+summary(homes_lm1)
+```
+
+the adjusted r-squared value: 84% of the variance in home price is explained by the predictor variables in this model (City, Bedrooms, Bathrooms, Price per sq foot, Status and Sq footage). the other 16% would be from outside variables such as property size or location / updated inside / renovations
+
+```{r}
+summary(homes_lm2)
+```
+
+Find the AIC value of each model:
+ - lower values = better fit and complexity
+```{r}
+AIC(homes_lm1)
+AIC(homes_lm2)
+```
 
 
+Try another permutation of this model that you think might make sense, check out and compare the model fit, outputs, and AIC value
+
+```{r}
+homes_lm3 <- lm(Price ~ City + PricePerSqFt + Bedrooms + Status, data = homes_sub)
+
+summary(homes_lm3)
+
+AIC(homes_lm3)
+```
+
+
+Use `modelsummary` to show model outputs side-by-side:
+
+ - if you use modelsummary to return model outputs of multiple models, it wants you to feed it to it as a list.
+```{r}
+modelsummary(list(homes_lm1, homes_lm2, homes_lm3))
+
+# goood to compare across different models to see what values make sense with world knowledge and realistically 
+# standard errors are in parenthesis below the values in the summary sheet when knitted
+```
+
+## Start making predictions with this model
+
+use `broom::augment()`
+
+```{r}
+homes_predicted <- augment(homes_lm1)
+
+homes_predicted
+```
+
+Use predict function to try out your model on new scenarios that you create
 
 
