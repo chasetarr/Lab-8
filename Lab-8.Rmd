@@ -1,0 +1,70 @@
+---
+title: "Lab 8 - 11/15"
+author: "Chase Tarr"
+date: "11/15/2021"
+output: html_document
+---
+
+```{r setup, include=TRUE, message = FALSE, warning = FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+
+# Attaching packages
+
+library(tidyverse)
+library(stargazer)
+library(corrplot)
+library(broom)
+library(modelsummary)
+library(here)
+```
+
+## Reading in the data
+```{r}
+homes <- read_csv(here("data", "slo_homes.csv"))
+```
+ Use `unique(homes$City)` to see how many different entries there are in that column
+ 
+A littl bit of cleaning:
+
+- make a subset called homes_sub that only contains observations (rows) where the city is:
+  - San Luis Obispo
+  - Arroyo Grande
+  - Atascadero
+  - Santa Maria-Orcutt
+  
+```{r}
+homes_sub <- homes %>% 
+  filter(City %in% c("San Luis Obispo", "Arroyo Grande", "Atascadero", "Santa Maria-Orcutt"))
+```
+ - using `unique(homes_sub$City)` to make sure the output is correct of new data frame for City column
+ 
+## Doing a little exploring of our data
+
+- Summary statistics for home price based on city and sale status: 
+
+Find and return in a nice summary table the mean and standard deviation of homeprice grouped by city and sale status
+```{r}
+summary_table <- homes_sub %>% 
+  group_by(City, Status) %>% 
+  summarize(mean_price = mean(Price, na.rm = TRUE), # removes the NA values
+            sd_price = sd(Price, na.rm = TRUE))
+
+# actually i dont even want to run this code: eval = FALSE in the top
+
+ggplot(data = homes_sub, aes(x = Price)) +
+  geom_density(aes(color = City, fill = City), alpha = 0.3) +# alpha outside aes() because only things that are related to variable goes in the aes
+  scale_x_continuous(limits = c(0, 3e6))
+```
+
+Explore the relationship (visual data exploration) between square footage and home price.
+
+```{r}
+ggplot(data = homes_sub, aes(x = SqFt, y = Price))+
+  geom_point(aes(color = City, fill = City, shape = Status), alpha = 0.7)+ # using color, fill and shape to identify differences in houses
+  geom_smooth(method = lm)
+```
+
+
+
+
+
